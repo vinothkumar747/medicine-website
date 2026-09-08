@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Save Your Life</title>
+    <style>
+        /* Colorful & Modern UI/UX Styles */
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); }
+
+        header {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between;
+            align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.15); position: sticky; top: 0; z-index: 100;
+        }
+        header h1 { font-size: 1.6rem; font-weight: 800; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .nav-buttons { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+        .nav-buttons button {
+            padding: 0.7rem 1.2rem; border: none; border-radius: 30px;
+            font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-customer { background-color: white; color: var(--primary); }
+        .btn-customer:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .btn-location { background-color: #e0f2fe; color: #0369a1; }
+        .btn-location:hover { background-color: #bae6fd; transform: translateY(-3px); }
+        .btn-admin { background-color: #1e293b; color: white; }
+        .btn-admin:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); background-color: #0f172a; }
+
+        .hero {
+            background: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url('https://placehold.co/1200x300?text=Healthcare') center/cover;
+            padding: 4rem 2rem 5rem 2rem; text-align: center; border-bottom: 3px solid var(--secondary); animation: fadeIn 0.8s;
+        }
+        .hero h2 { font-size: 2.5rem; color: var(--primary-dark); font-weight: 800; margin-bottom: 0.5rem; }
+        .hero p { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+
+        .search-container { max-width: 600px; margin: -25px auto 30px auto; position: relative; z-index: 10; }
+        .search-container input {
+            width: 100%; padding: 15px 25px; font-size: 1.1rem; border-radius: 30px; outline: none; border: 3px solid transparent;
+            background: linear-gradient(white, white) padding-box, linear-gradient(135deg, var(--primary), var(--secondary)) border-box;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: 0.3s;
+        }
+        .search-container input:focus { box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); transform: scale(1.02); }
+
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 2rem; display: none; animation: fadeIn 0.5s; }
+        .active-view { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .medicine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .med-card {
+            background: var(--card-bg); border-radius: 15px; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease; position: relative; border-top: 5px solid var(--primary);
+        }
+        .med-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .med-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+        .med-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; }
+        .med-card h3 { font-size: 1.4rem; color: var(--text-main); font-weight: 700; }
+        .med-company { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
+        .med-price { font-size: 1.6rem; font-weight: 800; color: var(--success); margin-bottom: 1.5rem; }
+        
+        .buy-btn { width: 100%; padding: 0.8rem; background: linear-gradient(135deg, var(--secondary), #f43f5e); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .buy-btn:hover { transform: scale(1.02); }
+
+        .customer-orders-list { display: flex; flex-direction: column; gap: 15px; }
+        .customer-order-card {
+            background: white; padding: 1.5rem; border-radius: 12px; border-left: 5px solid var(--success);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+        }
+        .customer-order-card.canceled { border-left: 5px solid var(--danger); opacity: 0.8; }
+        .delivery-time { background: #dcfce7; color: #166534; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9rem; }
+        .canceled-badge { background: #fee2e2; color: #991b1b; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.9rem; }
+        
+        .btn-cancel-order { background: white; color: var(--danger); border: 1px solid var(--danger); padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-top: 10px; }
+        .btn-cancel-order:hover { background: var(--danger); color: white; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 2.5rem; border-radius: 15px; width: 90%; max-width: 450px; animation: fadeIn 0.3s; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { color: var(--primary-dark); font-size: 1.5rem; margin-bottom: 1rem; text-align: center; }
+        .form-group { margin-bottom: 1rem; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; outline: none; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary); }
+        .modal-btn { width: 100%; padding: 0.9rem; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-top: 10px; }
+        .close-modal { background: #cbd5e1 !important; color: var(--text-main) !important; margin-top: 10px; }
+
+        .admin-controls { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
+        .admin-tab-btn { padding: 0.8rem 1.5rem; border: none; background: white; color: var(--text-muted); font-size: 1rem; font-weight: bold; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; }
+        .admin-tab-btn.active { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
+        .admin-section { display: none; animation: fadeIn 0.4s; }
+        .admin-section.active { display: block; }
+        .admin-card { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; }
+        
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        th, td { padding: 1.2rem 1rem; text-align: left; border-bottom: 1px solid #f1f5f9; }
+        th { background: #f8fafc; color: var(--primary-dark); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; }
+        tr:hover { background: #f8fafc; }
+        .btn-edit { background: var(--warning); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 5px; }
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚕️ Medicine Save Your Life</h1>
+        <div class="nav-buttons">
+            <button class="btn-location" onclick="openLocationModal()">📍 Location</button>
+            <button class="btn-customer" onclick="switchCustomerSection('shop')">🛍️ Shop</button>
+            <button class="btn-customer" onclick="switchCustomerSection('myorders')" style="background: #fdf2f8; color: var(--secondary);">📦 My Orders</button>
+            <button class="btn-admin" onclick="openAuthModal()">⚙️ Admin Login</button>
+        </div>
+    </header>
+
+    <div id="customerView" class="container active-view">
+        <div id="shopSection">
+            <div class="hero">
+                <h2>Your Health, Our Priority</h2>
+                <p>100% Genuine Medicines Delivered to Your Doorstep</p>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="🔍 Search for medicines (e.g., Dolo, Syrup)..." onkeyup="searchMedicine()">
+            </div>
+            
+            <div class="medicine-grid" id="medicineList"></div>
+            <div id="noResultMsg" style="display:none; text-align:center; color:var(--danger); font-weight:bold; margin-top:20px;">No medicines found!</div>
+        </div>
+
+        <div id="myOrdersSection" style="display:none;">
+            <h2 style="color: var(--primary-dark); margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">📦 Your Recent Orders</h2>
+            <div class="customer-orders-list" id="myOrdersList"></div>
+        </div>
+    </div>
+
+    <div id="adminView" class="container">
+        <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 1.5rem;">Admin Dashboard</h2>
+        
+        <div class="admin-controls">
+            <button class="admin-tab-btn active" id="btn-add-med" onclick="openAddForm()">➕ Add New</button>
+            <button class="admin-tab-btn" id="btn-manage-meds" onclick="switchAdminSection('manage-meds')">🛠️ Manage</button>
+            <button class="admin-tab-btn" id="btn-orders" onclick="switchAdminSection('orders')">📦 All Orders</button>
+            <button class="admin-tab-btn" onclick="logoutAdmin()" style="background: var(--danger); color: white;">🚪 Logout</button>
+        </div>
+
+        <div id="add-med" class="admin-section active">
+            <div class="admin-card">
+                <form id="addMedicineForm">
+                    <div class="form-group"><label>Medicine Name</label><input type="text" id="medName" required></div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="medCategory" required>
+                            <option value="Tablet">💊 Tablet</option>
+                            <option value="Syrup">🧴 Syrup</option>
+                            <option value="Lotion">💧 Lotion</option>
+                            <option value="Powder">💨 Powder</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Price (₹)</label><input type="number" id="medPrice" required></div>
+                    <div class="form-group"><label>Manufacturer</label><input type="text" id="medCompany" required></div>
+                    <div class="form-group"><label>Dosage (mg / ml)</label><input type="text" id="medDosage" required></div>
+                    <div class="form-group">
+                        <label>Medicine Image</label>
+                        <input type="file" id="medPhoto" accept="image/*" required>
+                        <small id="photoHelp" style="color:var(--text-muted); display:none;">Leave empty to keep existing image</small>
+                    </div>
+                    <button type="submit" id="submitMedBtn" class="modal-btn">Publish Medicine</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="manage-meds" class="admin-section">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr><th>Image</th><th>Medicine Info</th><th>Category</th><th>Price (₹)</th><th>Actions</th></tr>
+                    </thead>
+                    <tbody id="manageTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="orders" class="admin-section">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr><th>Order ID</th><th>Customer Info (Full Details)</th><th>Medicine & Qty</th><th>Total (₹)</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="ordersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- LOCATION MODAL -->
+    <div id="locationModal" class="modal-overlay">
+        <div class="modal-content" style="width: 350px; text-align: center;">
+            <h3 style="color: var(--primary-dark); margin-bottom: 15px;">📍 Store Location</h3>
+            <div style="background: #f1f5f9; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                <p style="font-size: 1.1rem; font-weight: 600; color: var(--text-main); line-height: 1.8;">
+                    21, விநாயகர் கோவில் ஸ்ட்ரீட்,<br>
+                    கருங்கல்பாளையம்,<br>
+                    ஈரோடு.
+                </p>
+            </div>
+            <button class="modal-btn close-modal" onclick="closeModal('locationModal')" style="margin-top:0;">Close</button>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="authModal" class="modal-overlay">
+        <div class="modal-content" style="width: 350px;">
+            <h3>Admin Access</h3>
+            <div class="form-group"><input type="password" id="adminPassword" placeholder="Enter Password"></div>
+            <button class="modal-btn" onclick="verifyPassword()">Login</button>
+            <button class="modal-btn close-modal" onclick="closeModal('authModal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Place Your Order</h3>
+            <form id="placeOrderForm">
+                <input type="hidden" id="orderMedName">
+                <input type="hidden" id="orderMedPrice">
+                <div class="form-group"><label>Medicine</label><input type="text" id="displayMedName" readonly style="background: #f1f5f9; font-weight: bold; color: var(--primary);"></div>
+                <div class="form-group"><label>Quantity</label><input type="number" id="orderQty" min="1" value="1" required></div>
+                <div class="form-group"><label>Full Name</label><input type="text" id="orderName" required></div>
+                <div class="form-group"><label>Phone Number</label><input type="tel" id="orderPhone" required></div>
+                <div class="form-group"><label>Email ID</label><input type="email" id="orderEmail" required></div>
+                <div class="form-group"><label>Delivery Address</label><textarea id="orderAddress" rows="3" required></textarea></div>
+                
+                <button type="submit" class="modal-btn" style="background: var(--primary);">Proceed to Pay</button>
+                <button type="button" class="modal-btn close-modal" onclick="closeModal('orderModal')">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- NEW: QR Code Payment Modal (Updated Image Name) -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="color: var(--primary-dark);">Scan to Pay</h3>
+            <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);">Pay securely using GPay, PhonePe, or Paytm.</p>
+            
+            <!-- இங்கு ஸ்பேஸ் இல்லாமல் qrcode.jpg என மாற்றப்பட்டுள்ளது 👇 -->
+            <img src="qrcode.jpg" alt="QR Code Scanner" style="width: 250px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid #e2e8f0;">
+            
+            <p style="font-size: 1.2rem; font-weight: bold; color: var(--text-main); margin-bottom: 15px;">Total Amount: <span style="color: var(--success);">₹<span id="payAmount">0</span></span></p>
+            
+            <button type="button" class="modal-btn" style="background: var(--success);" onclick="confirmPaymentAndOrder()">I have Paid ✅</button>
+            <button type="button" class="modal-btn close-modal" onclick="closeModal('paymentModal')">Cancel Order</button>
+        </div>
+    </div>
+
+    <script>
+        let medicines = []; 
+        let editId = null; 
+
+        function loadMedicinesFromDB() {
+            const cacheBuster = "?t=" + new Date().getTime(); 
+            fetch('https://website-for-medicine.onrender.com/api/medicines' + cacheBuster)
+            .then(res => res.json())
+            .then(data => {
+                medicines = data;
+                displayMedicines(medicines);
+                renderManageMedicines();
+            })
+            .catch(err => console.error("Error loading medicines:", err));
+        }
+        
+        let orderCounter = Math.floor(Math.random() * 10000); 
+
+        function displayMedicines(medArray = medicines) {
+            const list = document.getElementById('medicineList');
+            const noResult = document.getElementById('noResultMsg');
+            list.innerHTML = ""; 
+            if(medArray.length === 0) { noResult.style.display = 'block'; } 
+            else {
+                noResult.style.display = 'none';
+                medArray.forEach((med) => {
+                    list.innerHTML += `
+                        <div class="med-card">
+                            <div class="med-badge">${med.category}</div>
+                            <img src="${med.image}" alt="${med.name}">
+                            <h3>${med.name} <span style="font-size:1rem; color:#64748b;">(${med.dosage})</span></h3>
+                            <p class="med-company">By ${med.company}</p>
+                            <p class="med-price">₹ ${med.price}</p>
+                            <button class="buy-btn" onclick="openOrderModal('${med.name}', ${med.price})">Order Now 🛒</button>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function searchMedicine() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            displayMedicines(medicines.filter(med => med.name.toLowerCase().includes(query) || med.category.toLowerCase().includes(query)));
+        }
+
+        function switchMainView(view) {
+            document.getElementById('customerView').classList.remove('active-view');
+            document.getElementById('adminView').classList.remove('active-view');
+            document.getElementById(view + 'View').classList.add('active-view');
+            if(view === 'customer') { switchCustomerSection('shop'); }
+            if(view === 'admin') { fetchAndRenderOrders(); loadMedicinesFromDB(); } 
+        }
+
+        function switchCustomerSection(section) {
+            if(section === 'shop') {
+                document.getElementById('shopSection').style.display = 'block';
+                document.getElementById('myOrdersSection').style.display = 'none';
+                loadMedicinesFromDB(); 
+            } else {
+                document.getElementById('shopSection').style.display = 'none';
+                document.getElementById('myOrdersSection').style.display = 'block';
+                fetchAndRenderOrders(); 
+            }
+        }
+
+        function switchAdminSection(sectionName) {
+            document.querySelectorAll('.admin-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionName).classList.add('active');
+            
+            if(document.getElementById('btn-' + sectionName)) {
+                document.getElementById('btn-' + sectionName).classList.add('active');
+            }
+        }
+
+        function openAddForm() {
+            document.getElementById('addMedicineForm').reset();
+            document.getElementById('submitMedBtn').innerText = "Publish Medicine";
+            document.getElementById('medPhoto').required = true;
+            document.getElementById('photoHelp').style.display = "none";
+            editId = null;
+            switchAdminSection('add-med');
+        }
+
+        function openAuthModal() { document.getElementById('authModal').style.display = 'flex'; document.getElementById('adminPassword').value = ''; }
+        function openLocationModal() { document.getElementById('locationModal').style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        function verifyPassword() {
+            if(btoa(document.getElementById('adminPassword').value) === "dmlub3RoMTIzNA==") {
+                closeModal('authModal'); switchMainView('admin');
+            } else { alert("Incorrect Password!"); }
+        }
+        function logoutAdmin() { alert("Logged out successfully"); switchMainView('customer'); }
+
+        function renderManageMedicines() {
+            const tbody = document.getElementById('manageTableBody');
+            tbody.innerHTML = "";
+            medicines.forEach((med) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><img src="${med.image}" width="50" height="50" style="border-radius:8px; object-fit:cover;"></td>
+                        <td><strong>${med.name}</strong><br><small>${med.dosage} | ${med.company}</small></td>
+                        <td>${med.category}</td>
+                        <td style="font-weight:bold; color:var(--success);">₹${med.price}</td>
+                        <td>
+                            <button class="btn-edit" onclick="editMedicine('${med._id}')">Edit</button>
+                            <button class="btn-delete" onclick="deleteMedicine('${med._id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function deleteMedicine(id) { 
+            if(confirm("Are you sure you want to delete this medicine globally?")) { 
+                fetch(`https://website-for-medicine.onrender.com/api/medicines/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(() => {
+                    alert("Deleted Globally! 🗑️");
+                    loadMedicinesFromDB();
+                })
+                .catch(err => alert("Error deleting medicine."));
+            } 
+        }
+
+        function editMedicine(id) {
+            editId = id; 
+            const med = medicines.find(m => m._id === id);
+            document.getElementById('medName').value = med.name; 
+            document.getElementById('medCategory').value = med.category;
+            document.getElementById('medPrice').value = med.price; 
+            document.getElementById('medCompany').value = med.company;
+            document.getElementById('medDosage').value = med.dosage; 
+            document.getElementById('medPhoto').required = false; 
+            document.getElementById('photoHelp').style.display = "block"; 
+            document.getElementById('submitMedBtn').innerText = "Update Medicine";
+            switchAdminSection('add-med');
+        }
+        
+        function resizeImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height = height * (MAX_WIDTH / width);
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    callback(canvas.toDataURL('image/jpeg', 0.8)); 
+                }
+                img.src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById('addMedicineForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            document.getElementById('submitMedBtn').innerText = "Uploading... ⏳"; 
+            
+            const file = document.getElementById('medPhoto').files[0];
+            if (file) { 
+                resizeImage(file, function(resizedImgData) {
+                    saveMedicineData(resizedImgData);
+                });
+            } else { 
+                if(editId) { 
+                    const existingMed = medicines.find(m => m._id === editId);
+                    saveMedicineData(existingMed.image); 
+                } 
+            }
+        });
+
+        function saveMedicineData(imgData) {
+            const medData = { 
+                name: document.getElementById('medName').value, 
+                category: document.getElementById('medCategory').value, 
+                price: document.getElementById('medPrice').value, 
+                company: document.getElementById('medCompany').value, 
+                dosage: document.getElementById('medDosage').value, 
+                image: imgData 
+            };
+
+            if (editId) {
+                fetch(`https://website-for-medicine.onrender.com/api/medicines/${editId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medData)
+                })
+                .then(res => res.json())
+                .then(() => {
+                    alert("Medicine Updated Globally! 🌍");
+                    resetForm();
+                })
+                .catch(err => alert("Error updating medicine."));
+            } else {
+                fetch('https://website-for-medicine.onrender.com/api/medicines', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(medData)
+                })
+                .then(res => res.json())
+                .then(() => {
+                    alert("Medicine Added Globally! 🌍");
+                    resetForm();
+                })
+                .catch(err => alert("Error uploading."));
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('addMedicineForm').reset(); 
+            document.getElementById('submitMedBtn').innerText = "Publish Medicine";
+            document.getElementById('medPhoto').required = true;
+            document.getElementById('photoHelp').style.display = "none";
+            editId = null;
+            loadMedicinesFromDB(); 
+            switchAdminSection('manage-meds'); 
+        }
+
+        let tempOrderData = null; 
+
+        function openOrderModal(medName, medPrice) {
+            document.getElementById('orderModal').style.display = 'flex';
+            document.getElementById('orderMedName').value = medName; document.getElementById('orderMedPrice').value = medPrice;
+            document.getElementById('displayMedName').value = medName + " (₹" + medPrice + ")"; document.getElementById('placeOrderForm').reset(); document.getElementById('orderQty').value = 1;
+        }
+
+        document.getElementById('placeOrderForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const total = parseInt(document.getElementById('orderMedPrice').value) * document.getElementById('orderQty').value;
+            let deliveryDate = new Date(); deliveryDate.setDate(deliveryDate.getDate() + 2);
+            let formattedDate = deliveryDate.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+
+            const name = document.getElementById('orderName').value;
+            const phone = document.getElementById('orderPhone').value;
+            const email = document.getElementById('orderEmail').value;
+            const address = document.getElementById('orderAddress').value;
+
+            const fullCustomerDetails = `<b>${name}</b><br><small>📞 ${phone}</small><br><small>📧 ${email}</small><br><small style="color:#4f46e5;">📍 ${address}</small>`;
+
+            tempOrderData = {
+                id: "ORD-" + orderCounter++,
+                customerDetails: fullCustomerDetails,
+                medicineStr: `${document.getElementById('orderMedName').value} (Qty: ${document.getElementById('orderQty').value})`,
+                totalAmount: total,
+                deliveryTime: `Expected by ${formattedDate}`,
+                status: 'Active', 
+                cancelReason: ''
+            };
+
+            closeModal('orderModal');
+            document.getElementById('payAmount').innerText = total;
+            document.getElementById('paymentModal').style.display = 'flex';
+        });
+
+        function confirmPaymentAndOrder() {
+            if(!tempOrderData) return;
+
+            fetch('https://website-for-medicine.onrender.com/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(tempOrderData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                closeModal('paymentModal');
+                alert("Payment Successful & Order Placed! 🎉");
+                
+                let myLocalOrders = JSON.parse(localStorage.getItem('myOrdersList')) || [];
+                myLocalOrders.push(tempOrderData.id);
+                localStorage.setItem('myOrdersList', JSON.stringify(myLocalOrders));
+
+                tempOrderData = null; 
+                switchCustomerSection('myorders');
+            })
+            .catch(err => {
+                console.error("Error saving order:", err);
+                alert("Order Failed! Check internet connection.");
+            });
+        }
+
+        function fetchAndRenderOrders() {
+            fetch('https://website-for-medicine.onrender.com/api/orders')
+            .then(res => res.json())
+            .then(allOrders => {
+                
+                const adminTbody = document.getElementById('ordersTableBody');
+                if(adminTbody) {
+                    adminTbody.innerHTML = "";
+                    allOrders.forEach(order => {
+                        const isCanceled = order.status === 'Canceled';
+                        adminTbody.innerHTML += `
+                            <tr style="background: ${isCanceled ? '#fef2f2' : 'white'};">
+                                <td style="font-weight:bold; color:var(--primary);">${order.id}</td>
+                                <td>${order.customerDetails}</td>
+                                <td>${order.medicineStr}</td>
+                                <td style="font-weight:bold; color:var(--success);">₹${order.totalAmount}</td>
+                                <td>
+                                    ${isCanceled 
+                                        ? `<span style="color:var(--danger); font-weight:bold;">Canceled</span><br><small style="color:var(--text-muted)">${order.cancelReason}</small>` 
+                                        : `<span style="color:var(--success); font-weight:bold;">Active</span><br><small style="color:var(--text-muted)">${order.deliveryTime}</small>`
+                                    }
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                const myOrdersList = document.getElementById('myOrdersList');
+                if(myOrdersList) {
+                    myOrdersList.innerHTML = "";
+                    
+                    let myLocalOrderIds = JSON.parse(localStorage.getItem('myOrdersList')) || [];
+                    let filteredOrders = allOrders.filter(order => myLocalOrderIds.includes(order.id));
+
+                    if(filteredOrders.length === 0) { 
+                        myOrdersList.innerHTML = `<p style="text-align:center; padding:20px;">No orders yet.</p>`; 
+                        return; 
+                    }
+                    filteredOrders.forEach(order => {
+                        const isCanceled = order.status === 'Canceled';
+                        myOrdersList.innerHTML += `
+                            <div class="customer-order-card ${isCanceled ? 'canceled' : ''}">
+                                <div>
+                                    <span style="font-weight:bold; color:var(--primary); font-size:1.1rem;">${order.id}</span>
+                                    <h3 style="margin: 5px 0; color: ${isCanceled ? 'var(--text-muted)' : 'var(--text-main)'};">${order.medicineStr}</h3>
+                                    <p style="color: var(--text-muted);">Amount Paid: <span style="color:${isCanceled ? 'var(--text-muted)' : 'var(--success)'}; font-weight:bold;">₹${order.totalAmount}</span></p>
+                                </div>
+                                <div style="text-align:right;">
+                                    ${isCanceled 
+                                        ? `<span class="canceled-badge">❌ Canceled</span><p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Reason: ${order.cancelReason}</p>`
+                                        : `<span class="delivery-time">🚚 ${order.deliveryTime}</span>`
+                                    }
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            })
+        }
+
+        loadMedicinesFromDB();
+    </script>
+</body>
+</html>
