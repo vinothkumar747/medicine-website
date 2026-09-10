@@ -21,7 +21,8 @@ const orderSchema = new mongoose.Schema({
     deliveryTime: String,
     status: { type: String, default: 'Active' },
     cancelReason: String,
-    createdAt: { type: Date, default: Date.now } // ஆர்டர் செய்த நேரம் இதில் பதிவாகும்
+    paymentScreenshot: String, // NEW: ஸ்கிரீன்ஷாட் சேமிக்க
+    createdAt: { type: Date, default: Date.now }
 });
 const Order = mongoose.model('Order', orderSchema);
 
@@ -44,15 +45,14 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// மாத்திரைகளுக்கான கோடு (புதிய அப்டேட்)
 const medicineSchema = new mongoose.Schema({
     name: String,
     category: String,
     price: Number,
     company: String,
     dosage: String,
-    batchNo: String,     // NEW: பேட்ச் நம்பர்
-    expiryDate: String,  // NEW: எக்ஸ்பயரி டேட்
+    batchNo: String,
+    expiryDate: String,
     image: String
 });
 const Medicine = mongoose.model('Medicine', medicineSchema);

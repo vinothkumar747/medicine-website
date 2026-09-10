@@ -60,11 +60,10 @@
 
         .medicine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
         
-        /* Product Card - Clickable styling */
         .med-card {
             background: var(--card-bg); border-radius: 15px; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
             transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; border-top: 5px solid var(--primary);
-            cursor: pointer; /* இது கார்டை க்ளிக் செய்யக்கூடியதாக மாற்றும் */
+            cursor: pointer;
         }
         .med-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2); }
         .med-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
@@ -262,24 +261,31 @@
         </div>
     </div>
 
-    <!-- UPI Direct Payment Modal -->
+    <!-- NEW: Smart UPI Payment Modal with Screenshot Upload -->
     <div id="paymentModal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center; max-width: 400px;">
+        <div class="modal-content" style="text-align: center; max-width: 450px;">
             <h3 style="color: var(--primary-dark); font-size: 1.6rem; margin-bottom: 5px;">Complete Payment</h3>
-            <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">Pay securely using GPay, PhonePe, or Paytm.</p>
+            <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">Pay securely to confirm your order.</p>
             
             <div style="background: #f8fafc; padding: 25px 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #6366f1; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
-                <p style="font-size: 0.9rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Official Payment Number</p>
-                <!-- உங்களின் 9976309370 நம்பர் இங்கே காட்டப்படும் -->
-                <h2 style="color: #1e293b; font-size: 2.3rem; letter-spacing: 3px; margin-bottom: 5px;">9976309370</h2>
+                <p style="font-size: 0.9rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Official Payment Details</p>
+                <h2 style="color: #1e293b; font-size: 2.3rem; letter-spacing: 2px; margin-bottom: 5px;">9976309370</h2>
+                <p style="font-size: 1rem; color: var(--primary-dark); font-weight: 600; margin-bottom: 10px;">UPI ID: 9976309370@sbi</p>
+                
                 <p style="font-size: 1.2rem; font-weight: bold; color: var(--success); margin-bottom: 20px;">Amount: ₹<span id="payAmountDisplay">0</span></p>
                 
-                <!-- இதுதான் ஜிபே ஓபன் செய்யும் பட்டன் -->
-                <a id="upiPaymentBtn" href="#" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">Pay using UPI App 📱</a>
+                <a id="upiPaymentBtn" href="#" onclick="triggerUPIApp()" style="display: inline-block; width: 100%; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">Pay using UPI App 📱</a>
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">(GPay, PhonePe, Paytm)</p>
             </div>
+
+            <!-- ஸ்கிரீன்ஷாட் அப்லோட் செய்யும் இடம் 👇 -->
+            <div style="text-align: left; margin-bottom: 15px; background: #fffbeb; padding: 15px; border-left: 4px solid var(--warning); border-radius: 8px;">
+                <label style="font-weight: 700; font-size: 0.95rem; color: #92400e; display: block; margin-bottom: 8px;">Upload Payment Screenshot: <span style="color:red">*</span></label>
+                <p style="font-size: 0.8rem; color: #b45309; margin-bottom: 10px;">Please upload the payment success proof to confirm.</p>
+                <input type="file" id="paymentProof" accept="image/*" style="width: 100%; padding: 8px; border: 1px solid #fcd34d; border-radius: 5px; background: white;" required>
+            </div>
             
-            <button type="button" class="modal-btn" style="background: var(--primary);" onclick="confirmPaymentAndOrder()">I have Paid ✅</button>
+            <button type="button" id="confirmPaymentBtn" class="modal-btn" style="background: var(--primary);" onclick="confirmPaymentAndOrder()">I have Paid & Uploaded ✅</button>
             <button type="button" class="modal-btn close-modal" onclick="closeModal('paymentModal')" style="background: #f1f5f9; color: var(--danger); margin-top: 10px;">Cancel Order</button>
         </div>
     </div>
@@ -312,11 +318,8 @@
                 medArray.forEach((med) => {
                     let batchInfo = med.batchNo ? `Batch: ${med.batchNo}` : "";
                     let expInfo = med.expiryDate ? `Exp: ${new Date(med.expiryDate).toLocaleDateString('en-IN', {month:'short', year:'numeric'})}` : "";
-                    
-                    // பிழை வராமல் இருக்க பெயரை பாதுகாப்பாக மாற்றுதல் (BUG FIXED HERE)
                     let safeName = med.name ? med.name.replace(/"/g, '&quot;') : 'Product';
 
-                    // கார்டை எங்கு தொட்டாலும் வேலை செய்யும் படி மாற்றுதல்
                     list.innerHTML += `
                         <div class="med-card" data-name="${safeName}" data-price="${med.price}" onclick="openOrderModal(this.getAttribute('data-name'), this.getAttribute('data-price'))">
                             <div class="med-badge">${med.category}</div>
@@ -495,15 +498,13 @@
 
             const fullCustomerDetails = `<b>${name}</b><br><small>📞 ${phone}</small><br><small>📧 ${email}</small><br><small style="color:#4f46e5;">📍 ${address}</small>`;
 
-            tempOrderData = { id: "ORD-" + orderCounter++, customerDetails: fullCustomerDetails, medicineStr: `${document.getElementById('orderMedName').value} (Qty: ${document.getElementById('orderQty').value})`, totalAmount: total, deliveryTime: `Expected by ${formattedDate}`, status: 'Active', cancelReason: '' };
+            tempOrderData = { id: "ORD-" + orderCounter++, customerDetails: fullCustomerDetails, medicineStr: `${document.getElementById('orderMedName').value} (Qty: ${document.getElementById('orderQty').value})`, totalAmount: total, deliveryTime: `Expected by ${formattedDate}`, status: 'Active', cancelReason: '', paymentScreenshot: '' };
 
             closeModal('orderModal');
-            
-            // Payment Modal Values
             document.getElementById('payAmountDisplay').innerText = total;
+            document.getElementById('paymentProof').value = ""; // Reset File Input
             
-            // உங்களின் போன் நம்பர் & பெயர் நேரடியாக ஜிபே-க்கு செல்லும் கோடு
-            const upiId = "9976309370@sbi"; // உங்களின் VPA ID
+            const upiId = "9976309370@sbi"; 
             const payeeName = "Vinothkumar G"; 
             const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
             document.getElementById('upiPaymentBtn').href = upiLink;
@@ -511,15 +512,55 @@
             document.getElementById('paymentModal').style.display = 'flex';
         });
 
+        function triggerUPIApp() {
+            if(!tempOrderData) return;
+            const total = tempOrderData.totalAmount;
+            const upiId = "9976309370@sbi";
+            const payeeName = "Vinothkumar G";
+            const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if(isMobile) {
+                window.location.href = upiLink;
+                setTimeout(() => { alert(`If your UPI app didn't open automatically, please manually send ₹${total} to UPI ID: ${upiId} or Number: 9976309370.`); }, 2000);
+            } else {
+                alert(`You are on Desktop/Web.\nPlease manually send ₹${total} to:\nUPI ID: ${upiId}\nor\nNumber: 9976309370 using your Mobile App.`);
+            }
+        }
+
+        // ஸ்கிரீன்ஷாட் அப்லோட் செய்யப்பட்டால் மட்டுமே ஆர்டர் கன்பார்ம் ஆகும் லாஜிக்
         function confirmPaymentAndOrder() {
             if(!tempOrderData) return;
-            fetch('https://website-for-medicine.onrender.com/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tempOrderData) })
-            .then(res => res.json())
-            .then(data => {
-                closeModal('paymentModal'); alert("Payment Successful & Order Placed! 🎉");
-                let myLocalOrders = JSON.parse(localStorage.getItem('myOrdersList')) || []; myLocalOrders.push(tempOrderData.id); localStorage.setItem('myOrdersList', JSON.stringify(myLocalOrders));
-                tempOrderData = null; switchCustomerSection('myorders');
-            }).catch(err => { console.error("Error saving order:", err); alert("Order Failed! Check internet connection."); });
+
+            const fileInput = document.getElementById('paymentProof');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                alert("⚠️ Please upload the payment screenshot to confirm your order.");
+                return;
+            }
+
+            document.getElementById('confirmPaymentBtn').innerText = "Uploading & Confirming... ⏳";
+
+            resizeImage(fileInput.files[0], function(resizedImgData) {
+                tempOrderData.paymentScreenshot = resizedImgData; // படத்தையும் சேர்த்து அனுப்புதல்
+
+                fetch('https://website-for-medicine.onrender.com/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tempOrderData) })
+                .then(res => res.json())
+                .then(data => {
+                    closeModal('paymentModal'); 
+                    alert("Payment Verified & Order Placed Successfully! 🎉");
+                    document.getElementById('confirmPaymentBtn').innerText = "I have Paid & Uploaded ✅";
+                    
+                    let myLocalOrders = JSON.parse(localStorage.getItem('myOrdersList')) || []; 
+                    myLocalOrders.push(tempOrderData.id); 
+                    localStorage.setItem('myOrdersList', JSON.stringify(myLocalOrders));
+                    tempOrderData = null; 
+                    switchCustomerSection('myorders');
+                }).catch(err => { 
+                    console.error("Error saving order:", err); 
+                    alert("Order Failed! Check internet connection."); 
+                    document.getElementById('confirmPaymentBtn').innerText = "I have Paid & Uploaded ✅";
+                });
+            });
         }
 
         function fetchAndRenderOrders() {
@@ -532,12 +573,16 @@
                     allOrders.forEach(order => {
                         const isCanceled = order.status === 'Canceled';
                         let orderTime = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "Just now";
+                        
+                        // அட்மினுக்கு ஸ்கிரீன்ஷாட்டைப் பார்க்க லிங்க் காட்டுதல் 👇
+                        let screenshotLink = order.paymentScreenshot ? `<br><a href="${order.paymentScreenshot}" target="_blank" style="color:var(--primary); font-size:0.85rem; font-weight:bold; text-decoration:underline;">🖼️ View Screenshot</a>` : `<br><small style="color:var(--danger)">No Screenshot</small>`;
+
                         adminTbody.innerHTML += `
                             <tr style="background: ${isCanceled ? '#fef2f2' : 'white'};">
                                 <td style="font-weight:bold; color:var(--primary);">${order.id}</td>
                                 <td>${order.customerDetails}<br><small style="color:var(--secondary); font-weight:bold;">🕒 Ordered: ${orderTime}</small></td>
                                 <td>${order.medicineStr}</td>
-                                <td style="font-weight:bold; color:var(--success);">₹${order.totalAmount}</td>
+                                <td style="font-weight:bold; color:var(--success);">₹${order.totalAmount} ${screenshotLink}</td>
                                 <td>${isCanceled ? `<span style="color:var(--danger); font-weight:bold;">Canceled</span><br><small style="color:var(--text-muted)">${order.cancelReason}</small>` : `<span style="color:var(--success); font-weight:bold;">Active</span><br><small style="color:var(--text-muted)">${order.deliveryTime}</small>`}</td>
                             </tr>
                         `;
