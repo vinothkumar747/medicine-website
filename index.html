@@ -217,8 +217,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
-
     <div id="locationModal" class="modal-overlay">
         <div class="modal-content" style="width: 350px; text-align: center;">
             <h3 style="color: var(--primary-dark); margin-bottom: 15px;">📍 Store Location</h3>
@@ -261,18 +259,19 @@
         </div>
     </div>
 
-    <!-- NEW: Mobile Optimized Payment Modal with Phone Number & Deep Link -->
+    <!-- கியூஆர் கோடு நீக்கப்பட்டு, UPI Direct Payment பட்டன் மற்றும் நம்பர் கொடுக்கப்பட்டுள்ளது 👇 -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content" style="text-align: center; max-width: 400px;">
             <h3 style="color: var(--primary-dark); font-size: 1.6rem; margin-bottom: 5px;">Complete Payment</h3>
-            <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">Please pay the exact amount below to confirm your order.</p>
+            <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">Pay securely using GPay, PhonePe, or Paytm.</p>
             
             <div style="background: #f8fafc; padding: 25px 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #6366f1; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
                 <p style="font-size: 0.9rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Official Payment Number</p>
+                <!-- உங்களின் 9976309370 நம்பர் இங்கே காட்டப்படும் -->
                 <h2 style="color: #1e293b; font-size: 2.3rem; letter-spacing: 3px; margin-bottom: 5px;">9976309370</h2>
                 <p style="font-size: 1.2rem; font-weight: bold; color: var(--success); margin-bottom: 20px;">Amount: ₹<span id="payAmountDisplay">0</span></p>
                 
-                <!-- UPI Deep Link Button - Directs to GPay/PhonePe on Mobile -->
+                <!-- இதுதான் மேஜிக் பட்டன்! மொபைலில் க்ளிக் செய்தால் நேராக GPay ஓபன் ஆகும் -->
                 <a id="upiPaymentBtn" href="#" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">Pay using UPI App 📱</a>
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">(GPay, PhonePe, Paytm)</p>
             </div>
@@ -355,7 +354,6 @@
             document.querySelectorAll('.admin-section').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(sectionName).classList.add('active');
-            
             if(document.getElementById('btn-' + sectionName)) {
                 document.getElementById('btn-' + sectionName).classList.add('active');
             }
@@ -389,11 +387,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><img src="${med.image}" width="50" height="50" style="border-radius:8px; object-fit:cover;"></td>
-                        <td>
-                            <strong>${med.name}</strong><br>
-                            <small>${med.dosage} | ${med.company}</small><br>
-                            <small style="color:var(--danger)">Batch: ${med.batchNo || '-'} | Exp: ${expFormat}</small>
-                        </td>
+                        <td><strong>${med.name}</strong><br><small>${med.dosage} | ${med.company}</small><br><small style="color:var(--danger)">Batch: ${med.batchNo || '-'} | Exp: ${expFormat}</small></td>
                         <td>${med.category}</td>
                         <td style="font-weight:bold; color:var(--success);">₹${med.price}</td>
                         <td>
@@ -409,10 +403,7 @@
             if(confirm("Are you sure you want to delete this globally?")) { 
                 fetch(`https://website-for-medicine.onrender.com/api/medicines/${id}`, { method: 'DELETE' })
                 .then(res => res.json())
-                .then(() => {
-                    alert("Deleted Globally! 🗑️");
-                    loadMedicinesFromDB();
-                })
+                .then(() => { alert("Deleted Globally! 🗑️"); loadMedicinesFromDB(); })
                 .catch(err => alert("Error deleting."));
             } 
         }
@@ -439,18 +430,10 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 500;
-                    let width = img.width;
-                    let height = img.height;
-
-                    if (width > MAX_WIDTH) {
-                        height = height * (MAX_WIDTH / width);
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+                    const MAX_WIDTH = 500; let width = img.width; let height = img.height;
+                    if (width > MAX_WIDTH) { height = height * (MAX_WIDTH / width); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
                     callback(canvas.toDataURL('image/jpeg', 0.8)); 
                 }
                 img.src = e.target.result;
@@ -461,67 +444,24 @@
         document.getElementById('addMedicineForm').addEventListener('submit', function(e) {
             e.preventDefault(); 
             document.getElementById('submitMedBtn').innerText = "Uploading... ⏳"; 
-            
             const file = document.getElementById('medPhoto').files[0];
-            if (file) { 
-                resizeImage(file, function(resizedImgData) {
-                    saveMedicineData(resizedImgData);
-                });
-            } else { 
-                if(editId) { 
-                    const existingMed = medicines.find(m => m._id === editId);
-                    saveMedicineData(existingMed.image); 
-                } 
-            }
+            if (file) { resizeImage(file, function(resizedImgData) { saveMedicineData(resizedImgData); }); } 
+            else { if(editId) { const existingMed = medicines.find(m => m._id === editId); saveMedicineData(existingMed.image); } }
         });
 
         function saveMedicineData(imgData) {
-            const medData = { 
-                name: document.getElementById('medName').value, 
-                category: document.getElementById('medCategory').value, 
-                price: document.getElementById('medPrice').value, 
-                company: document.getElementById('medCompany').value, 
-                dosage: document.getElementById('medDosage').value, 
-                batchNo: document.getElementById('medBatch').value, 
-                expiryDate: document.getElementById('medExpiry').value, 
-                image: imgData 
-            };
-
+            const medData = { name: document.getElementById('medName').value, category: document.getElementById('medCategory').value, price: document.getElementById('medPrice').value, company: document.getElementById('medCompany').value, dosage: document.getElementById('medDosage').value, batchNo: document.getElementById('medBatch').value, expiryDate: document.getElementById('medExpiry').value, image: imgData };
             if (editId) {
-                fetch(`https://website-for-medicine.onrender.com/api/medicines/${editId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(medData)
-                })
-                .then(res => res.json())
-                .then(() => {
-                    alert("Updated Globally! 🌍");
-                    resetForm();
-                })
-                .catch(err => alert("Error updating."));
+                fetch(`https://website-for-medicine.onrender.com/api/medicines/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(medData) })
+                .then(res => res.json()).then(() => { alert("Updated Globally! 🌍"); resetForm(); }).catch(err => alert("Error updating."));
             } else {
-                fetch('https://website-for-medicine.onrender.com/api/medicines', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(medData)
-                })
-                .then(res => res.json())
-                .then(() => {
-                    alert("Added Globally! 🌍");
-                    resetForm();
-                })
-                .catch(err => alert("Error uploading."));
+                fetch('https://website-for-medicine.onrender.com/api/medicines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(medData) })
+                .then(res => res.json()).then(() => { alert("Added Globally! 🌍"); resetForm(); }).catch(err => alert("Error uploading."));
             }
         }
 
         function resetForm() {
-            document.getElementById('addMedicineForm').reset(); 
-            document.getElementById('submitMedBtn').innerText = "Publish Product";
-            document.getElementById('medPhoto').required = true;
-            document.getElementById('photoHelp').style.display = "none";
-            editId = null;
-            loadMedicinesFromDB(); 
-            switchAdminSection('manage-meds'); 
+            document.getElementById('addMedicineForm').reset(); document.getElementById('submitMedBtn').innerText = "Publish Product"; document.getElementById('medPhoto').required = true; document.getElementById('photoHelp').style.display = "none"; editId = null; loadMedicinesFromDB(); switchAdminSection('manage-meds'); 
         }
 
         let tempOrderData = null; 
@@ -539,24 +479,16 @@
 
             const fullCustomerDetails = `<b>${name}</b><br><small>📞 ${phone}</small><br><small>📧 ${email}</small><br><small style="color:#4f46e5;">📍 ${address}</small>`;
 
-            tempOrderData = {
-                id: "ORD-" + orderCounter++,
-                customerDetails: fullCustomerDetails,
-                medicineStr: `${document.getElementById('orderMedName').value} (Qty: ${document.getElementById('orderQty').value})`,
-                totalAmount: total,
-                deliveryTime: `Expected by ${formattedDate}`,
-                status: 'Active', 
-                cancelReason: ''
-            };
+            tempOrderData = { id: "ORD-" + orderCounter++, customerDetails: fullCustomerDetails, medicineStr: `${document.getElementById('orderMedName').value} (Qty: ${document.getElementById('orderQty').value})`, totalAmount: total, deliveryTime: `Expected by ${formattedDate}`, status: 'Active', cancelReason: '' };
 
             closeModal('orderModal');
             
             // Payment Modal Values
             document.getElementById('payAmountDisplay').innerText = total;
             
-            // UPI Intent Setup - Mobile-ல் க்ளிக் செய்தால் நேராக GPay/PhonePe ஓபன் ஆகும்
-            const upiId = "9976309370@sbi"; // உங்களின் UPI ID
-            const payeeName = "Vinothkumar G"; // உங்களின் பெயர்
+            // உங்களின் போன் நம்பர் & பெயர் நேரடியாக ஜிபே-க்கு செல்லும் கோடு
+            const upiId = "9976309370@sbi"; // உங்களின் VPA ID
+            const payeeName = "Vinothkumar G"; 
             const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
             document.getElementById('upiPaymentBtn').href = upiLink;
 
@@ -565,54 +497,32 @@
 
         function confirmPaymentAndOrder() {
             if(!tempOrderData) return;
-
-            fetch('https://website-for-medicine.onrender.com/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(tempOrderData)
-            })
+            fetch('https://website-for-medicine.onrender.com/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tempOrderData) })
             .then(res => res.json())
             .then(data => {
-                closeModal('paymentModal');
-                alert("Payment Successful & Order Placed! 🎉");
-                
-                let myLocalOrders = JSON.parse(localStorage.getItem('myOrdersList')) || [];
-                myLocalOrders.push(tempOrderData.id);
-                localStorage.setItem('myOrdersList', JSON.stringify(myLocalOrders));
-
-                tempOrderData = null; 
-                switchCustomerSection('myorders');
-            })
-            .catch(err => {
-                console.error("Error saving order:", err);
-                alert("Order Failed! Check internet connection.");
-            });
+                closeModal('paymentModal'); alert("Payment Successful & Order Placed! 🎉");
+                let myLocalOrders = JSON.parse(localStorage.getItem('myOrdersList')) || []; myLocalOrders.push(tempOrderData.id); localStorage.setItem('myOrdersList', JSON.stringify(myLocalOrders));
+                tempOrderData = null; switchCustomerSection('myorders');
+            }).catch(err => { console.error("Error saving order:", err); alert("Order Failed! Check internet connection."); });
         }
 
         function fetchAndRenderOrders() {
             fetch('https://website-for-medicine.onrender.com/api/orders')
             .then(res => res.json())
             .then(allOrders => {
-                
                 const adminTbody = document.getElementById('ordersTableBody');
                 if(adminTbody) {
                     adminTbody.innerHTML = "";
                     allOrders.forEach(order => {
                         const isCanceled = order.status === 'Canceled';
                         let orderTime = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "Just now";
-                        
                         adminTbody.innerHTML += `
                             <tr style="background: ${isCanceled ? '#fef2f2' : 'white'};">
                                 <td style="font-weight:bold; color:var(--primary);">${order.id}</td>
                                 <td>${order.customerDetails}<br><small style="color:var(--secondary); font-weight:bold;">🕒 Ordered: ${orderTime}</small></td>
                                 <td>${order.medicineStr}</td>
                                 <td style="font-weight:bold; color:var(--success);">₹${order.totalAmount}</td>
-                                <td>
-                                    ${isCanceled 
-                                        ? `<span style="color:var(--danger); font-weight:bold;">Canceled</span><br><small style="color:var(--text-muted)">${order.cancelReason}</small>` 
-                                        : `<span style="color:var(--success); font-weight:bold;">Active</span><br><small style="color:var(--text-muted)">${order.deliveryTime}</small>`
-                                    }
-                                </td>
+                                <td>${isCanceled ? `<span style="color:var(--danger); font-weight:bold;">Canceled</span><br><small style="color:var(--text-muted)">${order.cancelReason}</small>` : `<span style="color:var(--success); font-weight:bold;">Active</span><br><small style="color:var(--text-muted)">${order.deliveryTime}</small>`}</td>
                             </tr>
                         `;
                     });
@@ -621,18 +531,12 @@
                 const myOrdersList = document.getElementById('myOrdersList');
                 if(myOrdersList) {
                     myOrdersList.innerHTML = "";
-                    
                     let myLocalOrderIds = JSON.parse(localStorage.getItem('myOrdersList')) || [];
                     let filteredOrders = allOrders.filter(order => myLocalOrderIds.includes(order.id));
-
-                    if(filteredOrders.length === 0) { 
-                        myOrdersList.innerHTML = `<p style="text-align:center; padding:20px;">No orders yet.</p>`; 
-                        return; 
-                    }
+                    if(filteredOrders.length === 0) { myOrdersList.innerHTML = `<p style="text-align:center; padding:20px;">No orders yet.</p>`; return; }
                     filteredOrders.forEach(order => {
                         const isCanceled = order.status === 'Canceled';
                         let orderTime = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "Just now";
-
                         myOrdersList.innerHTML += `
                             <div class="customer-order-card ${isCanceled ? 'canceled' : ''}">
                                 <div>
@@ -642,10 +546,7 @@
                                     <p style="font-size:0.85rem; color:var(--primary); margin-top:5px;">🕒 Ordered at: ${orderTime}</p>
                                 </div>
                                 <div style="text-align:right;">
-                                    ${isCanceled 
-                                        ? `<span class="canceled-badge">❌ Canceled</span><p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Reason: ${order.cancelReason}</p>`
-                                        : `<span class="delivery-time">🚚 ${order.deliveryTime}</span>`
-                                    }
+                                    ${isCanceled ? `<span class="canceled-badge">❌ Canceled</span><p style="font-size:0.8rem; color:var(--text-muted); margin-top:5px;">Reason: ${order.cancelReason}</p>` : `<span class="delivery-time">🚚 ${order.deliveryTime}</span>`}
                                 </div>
                             </div>
                         `;
