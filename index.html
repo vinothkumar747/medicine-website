@@ -59,20 +59,22 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
         .medicine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        
+        /* Product Card - Clickable styling */
         .med-card {
             background: var(--card-bg); border-radius: 15px; padding: 1.5rem; box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease; position: relative; border-top: 5px solid var(--primary);
+            transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; border-top: 5px solid var(--primary);
+            cursor: pointer; /* இது கார்டை க்ளிக் செய்யக்கூடியதாக மாற்றும் */
         }
-        .med-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .med-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2); }
         .med-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        .med-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; }
-        .med-card h3 { font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-bottom: 0.2rem;}
-        .med-info-small { font-size: 0.85rem; color: var(--danger); font-weight: 600; margin-bottom: 0.8rem; }
-        .med-company { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; }
-        .med-price { font-size: 1.6rem; font-weight: 800; color: var(--success); margin-bottom: 1.5rem; }
+        .med-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; pointer-events: none; }
+        .med-card h3 { font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-bottom: 0.2rem; pointer-events: none;}
+        .med-info-small { font-size: 0.85rem; color: var(--danger); font-weight: 600; margin-bottom: 0.8rem; pointer-events: none;}
+        .med-company { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem; pointer-events: none;}
+        .med-price { font-size: 1.6rem; font-weight: 800; color: var(--success); margin-bottom: 1.5rem; pointer-events: none;}
         
-        .buy-btn { width: 100%; padding: 0.8rem; background: linear-gradient(135deg, var(--secondary), #f43f5e); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .buy-btn:hover { transform: scale(1.02); }
+        .buy-btn { width: 100%; padding: 0.8rem; background: linear-gradient(135deg, var(--secondary), #f43f5e); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: 0.3s; pointer-events: none;}
 
         .customer-orders-list { display: flex; flex-direction: column; gap: 15px; }
         .customer-order-card {
@@ -217,6 +219,7 @@
         </div>
     </div>
 
+    <!-- Modals -->
     <div id="locationModal" class="modal-overlay">
         <div class="modal-content" style="width: 350px; text-align: center;">
             <h3 style="color: var(--primary-dark); margin-bottom: 15px;">📍 Store Location</h3>
@@ -259,7 +262,7 @@
         </div>
     </div>
 
-    <!-- கியூஆர் கோடு நீக்கப்பட்டு, UPI Direct Payment பட்டன் மற்றும் நம்பர் கொடுக்கப்பட்டுள்ளது 👇 -->
+    <!-- UPI Direct Payment Modal -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content" style="text-align: center; max-width: 400px;">
             <h3 style="color: var(--primary-dark); font-size: 1.6rem; margin-bottom: 5px;">Complete Payment</h3>
@@ -271,7 +274,7 @@
                 <h2 style="color: #1e293b; font-size: 2.3rem; letter-spacing: 3px; margin-bottom: 5px;">9976309370</h2>
                 <p style="font-size: 1.2rem; font-weight: bold; color: var(--success); margin-bottom: 20px;">Amount: ₹<span id="payAmountDisplay">0</span></p>
                 
-                <!-- இதுதான் மேஜிக் பட்டன்! மொபைலில் க்ளிக் செய்தால் நேராக GPay ஓபன் ஆகும் -->
+                <!-- இதுதான் ஜிபே ஓபன் செய்யும் பட்டன் -->
                 <a id="upiPaymentBtn" href="#" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">Pay using UPI App 📱</a>
                 <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">(GPay, PhonePe, Paytm)</p>
             </div>
@@ -310,15 +313,19 @@
                     let batchInfo = med.batchNo ? `Batch: ${med.batchNo}` : "";
                     let expInfo = med.expiryDate ? `Exp: ${new Date(med.expiryDate).toLocaleDateString('en-IN', {month:'short', year:'numeric'})}` : "";
                     
+                    // பிழை வராமல் இருக்க பெயரை பாதுகாப்பாக மாற்றுதல் (BUG FIXED HERE)
+                    let safeName = med.name ? med.name.replace(/"/g, '&quot;') : 'Product';
+
+                    // கார்டை எங்கு தொட்டாலும் வேலை செய்யும் படி மாற்றுதல்
                     list.innerHTML += `
-                        <div class="med-card">
+                        <div class="med-card" data-name="${safeName}" data-price="${med.price}" onclick="openOrderModal(this.getAttribute('data-name'), this.getAttribute('data-price'))">
                             <div class="med-badge">${med.category}</div>
-                            <img src="${med.image}" alt="${med.name}">
+                            <img src="${med.image}" alt="${safeName}">
                             <h3>${med.name} <span style="font-size:1rem; color:#64748b;">(${med.dosage})</span></h3>
                             <div class="med-info-small">${batchInfo} | ${expInfo}</div>
                             <p class="med-company">By ${med.company}</p>
                             <p class="med-price">₹ ${med.price}</p>
-                            <button class="buy-btn" onclick="openOrderModal('${med.name}', ${med.price})">Order Now 🛒</button>
+                            <button class="buy-btn">Order Now 🛒</button>
                         </div>
                     `;
                 });
@@ -465,6 +472,15 @@
         }
 
         let tempOrderData = null; 
+
+        function openOrderModal(medName, medPrice) {
+            document.getElementById('orderModal').style.display = 'flex';
+            document.getElementById('orderMedName').value = medName; 
+            document.getElementById('orderMedPrice').value = medPrice;
+            document.getElementById('displayMedName').value = medName + " (₹" + medPrice + ")"; 
+            document.getElementById('placeOrderForm').reset(); 
+            document.getElementById('orderQty').value = 1;
+        }
 
         document.getElementById('placeOrderForm').addEventListener('submit', function(e) {
             e.preventDefault();
