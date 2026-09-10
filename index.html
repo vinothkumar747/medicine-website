@@ -261,17 +261,24 @@
         </div>
     </div>
 
+    <!-- NEW: Mobile Optimized Payment Modal with Phone Number & Deep Link -->
     <div id="paymentModal" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="color: var(--primary-dark);">Scan to Pay</h3>
-            <p style="margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted);">Pay securely using GPay, PhonePe, or Paytm.</p>
+        <div class="modal-content" style="text-align: center; max-width: 400px;">
+            <h3 style="color: var(--primary-dark); font-size: 1.6rem; margin-bottom: 5px;">Complete Payment</h3>
+            <p style="margin-bottom: 20px; font-size: 0.95rem; color: var(--text-muted);">Please pay the exact amount below to confirm your order.</p>
             
-            <img src="qrcode.jpg" alt="QR Code Scanner" style="width: 250px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 2px solid #e2e8f0;">
+            <div style="background: #f8fafc; padding: 25px 20px; border-radius: 15px; margin-bottom: 20px; border: 2px dashed #6366f1; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                <p style="font-size: 0.9rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Official Payment Number</p>
+                <h2 style="color: #1e293b; font-size: 2.3rem; letter-spacing: 3px; margin-bottom: 5px;">9976309370</h2>
+                <p style="font-size: 1.2rem; font-weight: bold; color: var(--success); margin-bottom: 20px;">Amount: ₹<span id="payAmountDisplay">0</span></p>
+                
+                <!-- UPI Deep Link Button - Directs to GPay/PhonePe on Mobile -->
+                <a id="upiPaymentBtn" href="#" style="display: inline-block; background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 12px 25px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: transform 0.2s;">Pay using UPI App 📱</a>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 10px;">(GPay, PhonePe, Paytm)</p>
+            </div>
             
-            <p style="font-size: 1.2rem; font-weight: bold; color: var(--text-main); margin-bottom: 15px;">Total Amount: <span style="color: var(--success);">₹<span id="payAmount">0</span></span></p>
-            
-            <button type="button" class="modal-btn" style="background: var(--success);" onclick="confirmPaymentAndOrder()">I have Paid ✅</button>
-            <button type="button" class="modal-btn close-modal" onclick="closeModal('paymentModal')">Cancel Order</button>
+            <button type="button" class="modal-btn" style="background: var(--primary);" onclick="confirmPaymentAndOrder()">I have Paid ✅</button>
+            <button type="button" class="modal-btn close-modal" onclick="closeModal('paymentModal')" style="background: #f1f5f9; color: var(--danger); margin-top: 10px;">Cancel Order</button>
         </div>
     </div>
 
@@ -301,7 +308,6 @@
             else {
                 noResult.style.display = 'none';
                 medArray.forEach((med) => {
-                    // Batch No & Expiry Date Formatting
                     let batchInfo = med.batchNo ? `Batch: ${med.batchNo}` : "";
                     let expInfo = med.expiryDate ? `Exp: ${new Date(med.expiryDate).toLocaleDateString('en-IN', {month:'short', year:'numeric'})}` : "";
                     
@@ -520,12 +526,6 @@
 
         let tempOrderData = null; 
 
-        function openOrderModal(medName, medPrice) {
-            document.getElementById('orderModal').style.display = 'flex';
-            document.getElementById('orderMedName').value = medName; document.getElementById('orderMedPrice').value = medPrice;
-            document.getElementById('displayMedName').value = medName + " (₹" + medPrice + ")"; document.getElementById('placeOrderForm').reset(); document.getElementById('orderQty').value = 1;
-        }
-
         document.getElementById('placeOrderForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const total = parseInt(document.getElementById('orderMedPrice').value) * document.getElementById('orderQty').value;
@@ -550,7 +550,16 @@
             };
 
             closeModal('orderModal');
-            document.getElementById('payAmount').innerText = total;
+            
+            // Payment Modal Values
+            document.getElementById('payAmountDisplay').innerText = total;
+            
+            // UPI Intent Setup - Mobile-ல் க்ளிக் செய்தால் நேராக GPay/PhonePe ஓபன் ஆகும்
+            const upiId = "9976309370@sbi"; // உங்களின் UPI ID
+            const payeeName = "Vinothkumar G"; // உங்களின் பெயர்
+            const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${total}&cu=INR`;
+            document.getElementById('upiPaymentBtn').href = upiLink;
+
             document.getElementById('paymentModal').style.display = 'flex';
         });
 
@@ -590,7 +599,6 @@
                     adminTbody.innerHTML = "";
                     allOrders.forEach(order => {
                         const isCanceled = order.status === 'Canceled';
-                        // ஆர்டர் செய்த நேரத்தை எடுக்கிறோம் (Format: DD/MM/YYYY, HH:MM AM/PM)
                         let orderTime = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "Just now";
                         
                         adminTbody.innerHTML += `
@@ -623,7 +631,6 @@
                     }
                     filteredOrders.forEach(order => {
                         const isCanceled = order.status === 'Canceled';
-                        // ஆர்டர் செய்த நேரம் (Customer-க்கு காட்ட)
                         let orderTime = order.createdAt ? new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : "Just now";
 
                         myOrdersList.innerHTML += `
