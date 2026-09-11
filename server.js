@@ -13,7 +13,7 @@ mongoose.connect(mongoURI)
     .then(() => console.log('✅ MongoDB Database Connected!'))
     .catch((err) => console.error('❌ Database Connection Error:', err));
 
-// 1. Orders Database
+// 1. Orders Database (Payment Screenshot வசதியுடன்)
 const orderSchema = new mongoose.Schema({
     id: String,
     customerDetails: String,
@@ -69,7 +69,7 @@ app.delete('/api/medicines/:id', async (req, res) => {
     catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
 
-// 3. Customer Complaints (NEW)
+// 3. Customer Complaints Database (கம்ப்ளைன்ட் பாக்ஸ் வேலை செய்ய இது அவசியம்)
 const complaintSchema = new mongoose.Schema({
     name: String, phone: String, address: String, message: String, createdAt: { type: Date, default: Date.now }
 });
