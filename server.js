@@ -13,6 +13,7 @@ mongoose.connect(mongoURI)
     .then(() => console.log('✅ MongoDB Database Connected!'))
     .catch((err) => console.error('❌ Database Connection Error:', err));
 
+// 1. Orders Database
 const orderSchema = new mongoose.Schema({
     id: String,
     customerDetails: String,
@@ -21,7 +22,7 @@ const orderSchema = new mongoose.Schema({
     deliveryTime: String,
     status: { type: String, default: 'Active' },
     cancelReason: String,
-    paymentScreenshot: String, // NEW: ஸ்கிரீன்ஷாட் சேமிக்க
+    paymentScreenshot: String, 
     createdAt: { type: Date, default: Date.now }
 });
 const Order = mongoose.model('Order', orderSchema);
@@ -45,50 +46,49 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
+// 2. Medicines Database
 const medicineSchema = new mongoose.Schema({
-    name: String,
-    category: String,
-    price: Number,
-    company: String,
-    dosage: String,
-    batchNo: String,
-    expiryDate: String,
-    image: String
+    name: String, category: String, price: Number, company: String, dosage: String, batchNo: String, expiryDate: String, image: String
 });
 const Medicine = mongoose.model('Medicine', medicineSchema);
 
 app.get('/api/medicines', async (req, res) => {
-    try {
-        const meds = await Medicine.find();
-        res.status(200).json(meds);
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+    try { const meds = await Medicine.find(); res.status(200).json(meds); } 
+    catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
-
 app.post('/api/medicines', async (req, res) => {
-    try {
-        const newMed = new Medicine(req.body);
-        await newMed.save();
-        res.status(200).json({ success: true, message: 'Medicine added to Database!' });
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+    try { const newMed = new Medicine(req.body); await newMed.save(); res.status(200).json({ success: true }); } 
+    catch (error) { res.status(500).json({ success: false, error: error.message }); }
 });
-
 app.put('/api/medicines/:id', async (req, res) => {
+    try { await Medicine.findByIdAndUpdate(req.params.id, req.body); res.status(200).json({ success: true }); } 
+    catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+app.delete('/api/medicines/:id', async (req, res) => {
+    try { await Medicine.findByIdAndDelete(req.params.id); res.status(200).json({ success: true }); } 
+    catch (error) { res.status(500).json({ success: false, error: error.message }); }
+});
+
+// 3. Customer Complaints (NEW)
+const complaintSchema = new mongoose.Schema({
+    name: String, phone: String, address: String, message: String, createdAt: { type: Date, default: Date.now }
+});
+const Complaint = mongoose.model('Complaint', complaintSchema);
+
+app.post('/api/complaints', async (req, res) => {
     try {
-        await Medicine.findByIdAndUpdate(req.params.id, req.body);
-        res.status(200).json({ success: true, message: 'Medicine updated globally!' });
+        const newComp = new Complaint(req.body);
+        await newComp.save();
+        res.status(200).json({ success: true });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-app.delete('/api/medicines/:id', async (req, res) => {
+app.get('/api/complaints', async (req, res) => {
     try {
-        await Medicine.findByIdAndDelete(req.params.id);
-        res.status(200).json({ success: true, message: 'Medicine deleted globally!' });
+        const complaints = await Complaint.find().sort({ createdAt: -1 });
+        res.status(200).json(complaints);
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
