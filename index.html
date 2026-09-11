@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            var(--primary): #0ea5e9; 
+            --primary: #0ea5e9; 
             --primary-dark: #0369a1; 
             --secondary: #0284c7; 
             --success: #059669;
@@ -273,7 +273,7 @@
         </div>
     </div>
 
-    <!-- Smart UPI Payment Modal - UPI ID HIDDEN -->
+    <!-- Smart UPI Payment Modal - 100% NO UPI ID -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content" style="text-align: center; max-width: 450px;">
             <h3>Complete Payment</h3>
@@ -281,8 +281,7 @@
             
             <div style="background: var(--bg-color); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bae6fd;">
                 <p style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: 5px;">Official Payment Number</p>
-                <h2 style="color: var(--text-main); font-size: 2rem; letter-spacing: 1px; margin-bottom: 5px;">9976309370</h2>
-                <!-- UPI ID மறைக்கப்பட்டுள்ளது. ஸ்கிரீனில் காட்டப்படாது -->
+                <h2 style="color: var(--text-main); font-size: 2rem; letter-spacing: 1px; margin-bottom: 15px;">9976309370</h2>
                 <p style="font-size: 1.2rem; font-weight: 700; color: var(--success); margin-bottom: 15px;">Amount to Pay: ₹<span id="payAmountDisplay">0</span></p>
                 
                 <a id="upiPaymentBtn" href="#" onclick="triggerUPIApp()" style="display: block; background: var(--success); color: white; padding: 10px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: 0.2s;">Pay using UPI App 📱</a>
@@ -386,7 +385,7 @@
         }
         function logoutAdmin() { alert("Logged out successfully"); switchMainView('customer'); }
 
-        // --- Complaint Form Fix (Error handling added) ---
+        // --- Complaint Form Logic Fixed ---
         document.getElementById('helpForm').addEventListener('submit', function(e) {
             e.preventDefault();
             const btn = document.getElementById('submitHelpBtn');
@@ -402,31 +401,26 @@
             fetch('https://website-for-medicine.onrender.com/api/complaints', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(complaintData)
             })
-            .then(res => {
-                if(!res.ok) throw new Error("Backend Updating");
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                closeModal('helpModal'); alert("Your message has been sent to the Admin! We will contact you soon.");
-                btn.innerText = "Submit Complaint"; document.getElementById('helpForm').reset();
+                closeModal('helpModal'); 
+                alert("Your message has been sent to the Admin! We will contact you soon.");
+                btn.innerText = "Submit Complaint"; 
+                document.getElementById('helpForm').reset();
             })
             .catch(err => { 
-                alert("⚠️ Error: System is currently updating. Please wait 2 minutes and try sending the complaint again."); 
+                alert("⚠️ Request failed. Please check your internet or wait a moment and try again."); 
                 btn.innerText = "Submit Complaint"; 
             });
         });
 
-        // --- Fetch & Render Complaints ---
         function fetchAndRenderComplaints() {
             const tbody = document.getElementById('complaintsTableBody');
             if(!tbody) return;
             tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Loading complaints... ⏳</td></tr>`;
 
             fetch('https://website-for-medicine.onrender.com/api/complaints')
-            .then(res => {
-                if(!res.ok) throw new Error("Backend Updating");
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 tbody.innerHTML = "";
                 if(data.length === 0) { tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No complaints received yet.</td></tr>`; return; }
@@ -444,7 +438,7 @@
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; font-weight:bold;">⚠️ Backend Server is updating... Please refresh in 2 minutes.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red; font-weight:bold;">⚠️ Failed to load complaints.</td></tr>`;
             });
         }
 
@@ -505,7 +499,7 @@
 
         function resetForm() { document.getElementById('addMedicineForm').reset(); document.getElementById('submitMedBtn').innerText = "Publish Product"; document.getElementById('medPhoto').required = true; document.getElementById('photoHelp').style.display = "none"; editId = null; loadMedicinesFromDB(); switchAdminSection('manage-meds'); }
 
-        // --- Ordering & Payment Logic (UPI ID HIDDEN) ---
+        // --- Ordering & Payment Logic ---
         let tempOrderData = null; 
 
         function openOrderModal(medName, medPrice) {
@@ -536,7 +530,7 @@
             const total = tempOrderData.totalAmount; 
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
-            // அலர்ட்டில் கூட UPI ID-யை நீக்கிவிட்டு வெறும் நம்பரை மட்டுமே காட்டுகிறோம்!
+            // ALERT-ல் கூட UPI ID-யை நீக்கிவிட்டேன். வெறும் நம்பர் மட்டுமே காட்டும்.
             if(isMobile) { 
                 window.location.href = document.getElementById('upiPaymentBtn').href; 
                 setTimeout(() => { alert(`If app didn't open automatically, send ₹${total} to Official Number: 9976309370`); }, 2000); 
